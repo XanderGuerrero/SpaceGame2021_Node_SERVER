@@ -1033,6 +1033,7 @@ module.exports = class GameLobby extends LobbyBase {
 
         //we weill most;y only have one entry but just incase loop through all
         //and set to destroy
+        //hi
         returnExplosions.forEach(bulletExplosion => {
             //let playerHit = false;
             lobby.despawnExplosion(bulletExplosion);
