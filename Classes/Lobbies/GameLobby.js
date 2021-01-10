@@ -548,7 +548,7 @@ module.exports = class GameLobby extends LobbyBase {
                                     z: bulletExplosion.position.z
                                 }
                             }
-                            console.log('Explosion TIME');
+                            //console.log('Explosion TIME');
                             //emit to yourself and everyone else
 
                             connection.socket.emit('serverSpawnExplosion', returnExplosionData);

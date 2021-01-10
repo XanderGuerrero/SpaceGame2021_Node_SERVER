@@ -42,7 +42,7 @@ module.exports = class Connection{
         // });
 
         socket.on('collisionDestroy', function(data) {
-            console.log(" in connection.js");
+            //console.log(" in connection.js");
             connection.lobby.onCollisionDestroy(connection, data);
         });
 
