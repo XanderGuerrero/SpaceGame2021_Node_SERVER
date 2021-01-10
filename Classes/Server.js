@@ -100,7 +100,7 @@ module.exports = class Server{
         if(!lobbyFound) {
             console.log('Making a new game lobby');
             //change the gamelobby settings second parameter to add more players to the game
-            let gamelobby = new GameLobby(gameLobbies.length + 1, new GameLobbySettings('FFA',2));
+            let gamelobby = new GameLobby(gameLobbies.length + 1, new GameLobbySettings('FFA',1));
             server.lobbys.push(gamelobby);
             server.onSwitchLobby(connection, gamelobby.id);
         }
