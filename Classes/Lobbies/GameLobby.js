@@ -532,9 +532,9 @@ module.exports = class GameLobby extends LobbyBase {
                             var bulletExplosion = new BulletExplosion();
                             bulletExplosion.name  = 'Player_Bullet_Explosion1';
                             bulletExplosion.activator = bullet.activator;
-                            bulletExplosion.position.x = bullet.position.x;
-                            bulletExplosion.position.y = bullet.position.y;
-                            bulletExplosion.position.z = bullet.position.z;
+                            bulletExplosion.position.x = data.position.x;
+                            bulletExplosion.position.y = data.position.y;
+                            bulletExplosion.position.z = data.position.z;
 
                             lobby.bulletExplosions.push(bulletExplosion);
 
