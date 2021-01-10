@@ -498,7 +498,7 @@ module.exports = class GameLobby extends LobbyBase {
 
     onCollisionDestroy(connection = Connection, data){
         let lobby = this;
-        //console.log(" in onCollisionDestroy event");
+        console.log("data: %j",data);
         let returnBullets = lobby.bullets.filter(bullet => {
             return bullet.id == data.id
         });
