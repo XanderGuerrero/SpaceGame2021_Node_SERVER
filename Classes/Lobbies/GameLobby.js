@@ -498,14 +498,14 @@ module.exports = class GameLobby extends LobbyBase {
 
     onCollisionDestroy(connection = Connection, data){
         let lobby = this;
-        console.log(" in onCollisionDestroy event");
+        //console.log(" in onCollisionDestroy event");
         let returnBullets = lobby.bullets.filter(bullet => {
             return bullet.id == data.id
         });
 
         returnBullets.forEach(bullet => {
             let playerHit = false;
-            console.log(" in onCollisionDestroy event");
+            //console.log(" in onCollisionDestroy event");
             lobby.connections.forEach(c => {
                 let player = c.player;
 
@@ -1045,7 +1045,7 @@ module.exports = class GameLobby extends LobbyBase {
         let bulletExplosions = lobby.bulletExplosions;
         let connections = lobby.connections;
 
-        console.log('Destroying Explosion (' + bulletExplosion.id + ')');
+        //console.log('Destroying Explosion (' + bulletExplosion.id + ')');
         var index = bulletExplosions.indexOf(bulletExplosion);
         if(index > -1) {
             bulletExplosions.splice(index, 1);
@@ -1108,7 +1108,7 @@ module.exports = class GameLobby extends LobbyBase {
                 z: explosion.position.z
             }
         }
-        console.log('Explosion TIME');
+        //console.log('Explosion TIME');
         connection.socket.emit('serverSpawn', returnData);
         //only broadcast out to those in the same lobby as me
         connection.socket.broadcast.to(lobby.id).emit('serverSpawn', returnData);
