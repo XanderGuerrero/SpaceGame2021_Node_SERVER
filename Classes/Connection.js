@@ -63,7 +63,16 @@ module.exports = class Connection{
             socket.broadcast.to(connection.lobby.id).emit('updatePosition', player);
         });
 
+        socket.on('updateRotation', function(data){
+            //console.log('updateRotation data receieved shipTiltRotation : ' + data.shipTiltRotation);
 
+            player.barrelRotation = data.barrelRotation;
+            player.shipTiltRotation = data.shipTiltRotation;
+            player.shipTiltRotationX = data.shipTiltRotationX;
+            player.shipTiltRotationY = data.shipTiltRotationY;
+
+            socket.broadcast.to(connection.lobby.id).emit('updateRotation', player);
+        });
 
 
         socket.on('updateShipTilt', function(data){
