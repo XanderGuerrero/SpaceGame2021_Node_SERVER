@@ -22,7 +22,7 @@ module.exports = class EnemyAI extends AIBase{
         //AI stats
         this.rotation = 0;
         this.pitch = 0;
-
+        this.roll = 0;
         //shooting
         this.canShoot = false;
         this.currentTime = Number(0);
@@ -98,6 +98,7 @@ module.exports = class EnemyAI extends AIBase{
         ai.rotation = ai.rotation + angleStep; //Apply the angle step
         ai.rotation = rotation;
         ai.pitch = pitch;
+        ai.roll = bank;
         // console.log("angleAmountn: " + angleAmount);
         // console.log("Rotation: " + rotation);
         // console.log("AI rotation: " + ai.rotation);

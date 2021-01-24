@@ -75,16 +75,16 @@ module.exports = class Connection{
         });
 
 
-        socket.on('updateShipTilt', function(data){
-            ///console.log('updateRotation data receieved shipTiltRotation : ' + data.shipTiltRotation);
-            player.zTiltValue = data.zValueForTilt;
-            // player.barrelRotation = data.barrelRotation;
-            // player.shipTiltRotation = data.shipTiltRotation;
-            // player.shipTiltRotationX = data.shipTiltRotationX;
-            // player.shipTiltRotationY = data.shipTiltRotationY;
+        // socket.on('updateShipTilt', function(data){
+        //     ///console.log('updateRotation data receieved shipTiltRotation : ' + data.shipTiltRotation);
+        //     player.zTiltValue = data.zValueForTilt;
+        //     // player.barrelRotation = data.barrelRotation;
+        //     // player.shipTiltRotation = data.shipTiltRotation;
+        //     // player.shipTiltRotationX = data.shipTiltRotationX;
+        //     // player.shipTiltRotationY = data.shipTiltRotationY;
 
-            socket.broadcast.to(connection.lobby.id).emit('updateShipTilt', player);
-        });
+        //     socket.broadcast.to(connection.lobby.id).emit('updateShipTilt', player);
+        // });
 
         console.log('LEAVING CREATE EVENTS');
     }

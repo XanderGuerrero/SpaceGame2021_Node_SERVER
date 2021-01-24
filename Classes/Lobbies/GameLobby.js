@@ -187,7 +187,7 @@ module.exports = class GameLobby extends LobbyBase {
         let lobby = this;
         let connections = lobby.connections;
 
-        for (var i = 0; i < 300; i++) {
+        for (var i = 0; i < 50; i++) {
             
                 //calculate a random x,y,z coordinate
                 let X = Math.floor(Math.random() * (-100 - (100))) + (100);
@@ -499,8 +499,6 @@ module.exports = class GameLobby extends LobbyBase {
             lobby.connections[0].socket.emit('serverSpawn', returnData);  //to player 1
             lobby.connections[0].socket.broadcast.to(lobby.id).emit('serverSpawn', returnData);//broadcast to everyone that the ai spawned a bullet
         }
-     
-
     }
 
 
