@@ -29,6 +29,10 @@ module.exports = class Connection{
             connection.lobby.fireBullet(connection, data);
         });
 
+        socket.on('fireMissile', function(data) {
+            connection.lobby.fireMissile(connection, data);
+        });
+
         socket.on('serverSpawnExplosion', function(data) {
             connection.lobby.serverSpawnExplosion(connection, data);
         });
@@ -41,6 +45,11 @@ module.exports = class Connection{
         //     connection.lobby.onCollisionDestroy(connection, data);
         // });
 
+        socket.on('missileCollisionDestroy', function(data) {
+            //console.log(" in connection.js");
+            connection.lobby.missileCollisionDestroy(connection, data);
+        });
+
         socket.on('collisionDestroy', function(data) {
             //console.log(" in connection.js");
             connection.lobby.onCollisionDestroy(connection, data);
@@ -50,6 +59,9 @@ module.exports = class Connection{
             connection.lobby.BulletDestory(connection, data);
         });
 
+        socket.on('MissileDestory', function(data){
+            connection.lobby.MissileDestory(connection, data);
+        });
         socket.on('DestroyExplosion', function(data){
             connection.lobby.DestroyExplosion(connection, data);
         });

@@ -7,9 +7,10 @@ let LobbyState = require('../Utility/LobbyState')
 let Vector3 = require('../Vector3')
 let ServerItem = require('../Utility/ServerItem')
 let AIBase = require('../AI/AIBase')
+let Missile = require('../Missile')
 // let Asteroid1 = require('../AI/Asteroid1')
 let EnemyAI = require('../AI/EnemyAI')
-// let FlockAI = require('../AI/FlockAI')
+let FlockAI = require('../AI/FlockAI')
 var util = require('util')
 const { debugPort } = require('process')
 
@@ -20,7 +21,7 @@ module.exports = class GameLobby extends LobbyBase {
         this.lobbyState = new LobbyState();
         this.bullets = [];
         this.bulletExplosions = [];
-
+        this.missiles = [];
     }
 
     //called every cycle
@@ -33,22 +34,23 @@ module.exports = class GameLobby extends LobbyBase {
 
         //console.log('IN ONUPDATE OF LOBBY!!!!!!!!!!!!!!!!');
         //filter and get all AI from serverItems
-        let aiList = serverItems.filter(item => {return item instanceof AIBase;});
-        aiList.forEach(ai => {
+        //let aiEnemyList = serverItems.filter(item => {return item instanceof FlockAI;});
+        //let aiEnemyList = serverItems.filter(item => {return item instanceof AIBase;});
+        // aiList.forEach(ai => {
 
-            ai.onObtainTarget(lobby.connections)
+        //     ai.onObtainTarget(lobby.connections)
 
-            //Update each ai unity, passing in a function for those that need to update other connections
-            ai.onUpdate(data => {
-                lobby.connections.forEach(connection => {
-                    let socket = connection.socket;
-                    //console.log(JSON.stringify(data));
-                    socket.emit('UpdateAI', data);
-                });
-            },(data) =>{
-                lobby.fireBullet(undefined, data, true);//passing undefined for the connection bc this is the ai
-            }, serverItems);
-        });
+        //     //Update each ai unity, passing in a function for those that need to update other connections
+        //     ai.onUpdate(data => {
+        //         lobby.connections.forEach(connection => {
+        //             let socket = connection.socket;
+        //             //console.log(JSON.stringify(data));
+        //             socket.emit('UpdateAI', data);
+        //         });
+        //     },(data) =>{
+        //         lobby.fireBullet(undefined, data, true);//passing undefined for the connection bc this is the ai
+        //     }, serverItems);
+        // });
         //console.log('IN ONUPDATE OF LOBBY!!!!!!!!!!!!!!!!');
         //filter and get all AI from serverItems
         // let aiList = serverItems.filter(item => {return item instanceof AIBase;});
@@ -71,31 +73,31 @@ module.exports = class GameLobby extends LobbyBase {
 
         //filter and get all AI from serverItems
         
-        //let aiFlockList = serverItems.filter(item => {return item instanceof FlockAI;});
-        //let aiList = aiFlockList;
+        let aiFlockList = serverItems.filter(item => {return item instanceof FlockAI;});
+        let aiList = aiFlockList;
         //console.log("HI");
         //console.log(util.inspect(aiFlockList));
-        // aiFlockList.forEach(ai => {
+        aiFlockList.forEach(ai => {
 
-        //     ai.onObtainTarget(lobby.connections);
+            ai.onObtainTarget(lobby.connections);
 
-        //     //Update each ai unity, passing in a function for those that need to update other connections
-        //     ai.onUpdate(data => {
-        //         lobby.connections.forEach(connection => {
-        //             let socket = connection.socket;
-        //             //console.log(JSON.stringify(data));
-        //             socket.emit('updateAI_Rotation', data);                 
-        //         });
-        //     },(data) =>{
-        //         lobby.connections.forEach(connection => {
-        //             let socket = connection.socket;
-        //             //console.log(JSON.stringify(data));
-        //             socket.emit('UpdateAI', data);                  
-        //         });
-        //     },(data) =>{
-        //         lobby.fireBullet(undefined, data, true);//passing undefined for the connection bc this is the ai
-        //     }, (aiList));
-        // });
+            //Update each ai unity, passing in a function for those that need to update other connections
+            ai.onUpdate(data => {
+                lobby.connections.forEach(connection => {
+                    let socket = connection.socket;
+                    //console.log(JSON.stringify(data));
+                    socket.emit('updateAI_Rotation', data);                 
+                });
+            },(data) =>{
+                lobby.connections.forEach(connection => {
+                    let socket = connection.socket;
+                    //console.log(JSON.stringify(data));
+                    socket.emit('UpdateAI', data);                  
+                });
+            },(data) =>{
+                lobby.fireBullet(undefined, data, true);//passing undefined for the connection bc this is the ai
+            }, (aiList));
+        });
 
         //  //filter and get all Asteroid1 from serverItems
         //  let asteroid1List = serverItems.filter(item => {return item instanceof Asteroid1;});
@@ -114,6 +116,7 @@ module.exports = class GameLobby extends LobbyBase {
         //super.onUpdate();
         //update the bullets
         lobby.updateBullets();
+        lobby.updateMissiles();
         //respawn dead players
         lobby.updateDeadPlayers();
     }
@@ -142,8 +145,8 @@ module.exports = class GameLobby extends LobbyBase {
             console.log('We have enough players we can start the game');
             lobby.lobbyState.currentState = lobby.lobbyState.GAME;
             lobby.onSpawnAllPlayersIntoGame();
-            lobby.onSpawnAIIntoGame();
-            //lobby.onSpawnFlockAIIntoGame();
+            //lobby.onSpawnAIIntoGame();
+            lobby.onSpawnFlockAIIntoGame();
             //lobby.onSpawnAsteroidsIntoGame();
         }
 
@@ -187,7 +190,7 @@ module.exports = class GameLobby extends LobbyBase {
         let lobby = this;
         let connections = lobby.connections;
 
-        for (var i = 0; i < 50; i++) {
+        for (var i = 0; i < 20; i++) {
             
                 //calculate a random x,y,z coordinate
                 let X = Math.floor(Math.random() * (-100 - (100))) + (100);
@@ -319,12 +322,66 @@ module.exports = class GameLobby extends LobbyBase {
         bullets.forEach(bullet => {
             //check if its destoryed by calling on update
             //it returns a bool
-                let isDestroyed = bullet.onUpdate();
+                let isDestroyed = bullet.onUpdate(connections);
 
                 //if the bullet is destoryed
                 if(isDestroyed){
                     //despawn the bullet
                     lobby.despawnBullet(bullet);
+                }
+                else{
+                    /*var returnData = {
+                    id: bullet.id,
+                    position:{
+                        x: bullet.position.x,
+                        y: bullet.position.y,
+                        z: bullet.position.z
+                    } 
+                }
+
+                connections.forEach(connection =>{
+                    connection.socket.emit('updatePosition', returnData);
+                });*/
+            }
+        });
+
+    }
+
+    updateMissiles(){
+        let lobby = this;
+        let missiles = lobby.missiles;
+        let connections = lobby.connections;
+        let serverItems = lobby.serverItems;
+        let lockedTarget = new Vector3();
+        
+        //go through all the bullets
+        missiles.forEach(missile => {
+            //missile.onObtainTarget(lobby.connections);
+            //let aiEnemyList = serverItems.filter(item => {return item instanceof FlockAI;});
+            //console.log(util.inspect(aiEnemyList));
+            //missile.onObtainTarget(aiEnemyList);
+            let aiEnemy = serverItems.filter(item => {return item instanceof FlockAI;});
+            aiEnemy.filter(item =>{
+                 if(item.id == missile.target){
+                    lockedTarget.x = item.position.x;
+                    lockedTarget.y = item.position.y;
+                    lockedTarget.z = item.position.z;
+                }
+            })
+            //check if its destoryed by calling on update
+            //it returns a bool
+                let isDestroyed = missile.onUpdate(data => {
+                    lobby.connections.forEach(connection => {
+                        let socket = connection.socket;
+                        //console.log(JSON.stringify(data));
+                        socket.emit('UpdateMissileAI', data);                 
+                    });
+                }, connections, serverItems,lockedTarget)
+
+                //if the bullet is destoryed
+                if(isDestroyed){
+                    //despawn the bullet
+                    lobby.despawnMissile(missile);
                 }
                 else{
                     /*var returnData = {
@@ -502,7 +559,67 @@ module.exports = class GameLobby extends LobbyBase {
     }
 
 
+    fireMissile(connection = Connection, data, isAI = false){
+        let lobby = this;
 
+        console.log(JSON.stringify(data));
+        var missile = new Missile();
+        missile.name  = 'Missile';
+        missile.activator = data.activator;
+        //console.log("activator: " + data.activator);
+        missile.position.x = data.position.x;
+        missile.position.y = data.position.y;
+        missile.position.z = data.position.z;
+        missile.target.x = data.target.x;
+        missile.target.y = data.target.y;
+        missile.target.z = data.target.z;
+        missile.targetId = data.targetId;
+        console.log("target: " +  missile.target.x);
+        missile.hasTarget = true;
+        missile.direction.x = data.direction.x;
+        missile.direction.y = data.direction.y;
+        missile.direction.z = data.direction.z;
+
+        lobby.missiles.push(missile);
+
+        var returnData = {
+            name: missile.name,
+            id: missile.id,
+            activator: missile.activator,
+            position: {
+                x: missile.position.x,
+                y: missile.position.y,
+                z: missile.position.z
+            },
+            direction: {
+                x: missile.direction.x,
+                y: missile.direction.y,
+                z: missile.direction.z
+            },
+            target: {
+                x: missile.target.x,
+                y: missile.target.y,
+                z: missile.target.z
+            },
+            speed: missile.speed, 
+            targetId: missile.targetId
+            
+        }
+        //console.log("fire Missile from fireMissile() - serverSpawn(): ");
+        //console.log(!isAI);
+        if(!isAI){
+            connection.socket.emit('serverSpawn', returnData);
+            //only broadcast out to those in the same lobby as me
+            connection.socket.broadcast.to(lobby.id).emit('serverSpawn', returnData);
+            //console.log("1");
+        }
+        else if(lobby.connections.length > 0){
+          
+            lobby.connections[0].socket.emit('serverSpawn', returnData);  //to player 1
+            lobby.connections[0].socket.broadcast.to(lobby.id).emit('serverSpawn', returnData);//broadcast to everyone that the ai spawned a bullet
+            //console.log("2");
+        }
+    }
 
 
 
@@ -556,10 +673,11 @@ module.exports = class GameLobby extends LobbyBase {
                 if(bullet.activator != player.id) {
                     let distance = bullet.position.Distance(player.position);
 
-                    if(distance < 5) {
+                    //if(distance < 30) 
+                    if (data.ObjCollidedWith == player.id){
                         let isDead = player.dealDamage(50);
                         if(isDead) {
-                            //console.log('Player with id: ' + player.id + ' has died');
+                            console.log('Player with id: ' + player.id + ' has died at a distance of: ' + distance);
                             let returnData = {
                                 id: player.id
                             }
@@ -601,7 +719,7 @@ module.exports = class GameLobby extends LobbyBase {
             connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);
         });
 
-        //if player is hit
+        //if AI player is hit
         if (!playerHit) {
         let aiList = lobby.serverItems.filter(item => {return item instanceof AIBase});
         aiList.forEach(ai => {
@@ -612,7 +730,7 @@ module.exports = class GameLobby extends LobbyBase {
                 //console.log('Collided with something: ' + JSON.stringify(data));
                 
                 //if (data.distance == 0 && ai.id == data.collisionObjectsNetID) {
-                    if (distance < 10){  
+                    if (data.ObjCollidedWith == ai.id){  
                     // console.log('AI distance when hit from client: ' + data.distance );
                     // console.log('AI ID from server: ' + ai.id);
                     // console.log('AI ID from client: ' + data.collisionObjectsNetID);
@@ -629,8 +747,10 @@ module.exports = class GameLobby extends LobbyBase {
                     // if(data.name == "Enemy_AI(Clone)"){
                     //     isDead = ai.dealDamage(25);
                     // }
-                    let isDead = ai.dealDamage(100);
+
+                    let isDead = ai.dealDamage(50);
                     if (isDead) {
+                        console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
                         //console.log(data.name + ' has died');
                         let returnData = {
                             id: ai.id
@@ -673,9 +793,9 @@ module.exports = class GameLobby extends LobbyBase {
                 }
                 playerHit = true;
                 lobby.despawnBullet(bullet);
-            }
-        });
-    }
+            }});
+        
+        }
 
             if(!playerHit) {
                 bullet.isDestroyed = true;
@@ -683,7 +803,177 @@ module.exports = class GameLobby extends LobbyBase {
             //lobby.despawnBullet(bullet);
         });        
     }
+
+    missileCollisionDestroy(connection = Connection, data){
+        let lobby = this;
+        console.log(" in missileCollisionDestroy event");
+        let returnMissiles = lobby.missiles.filter(missile => {
+            return missile.id == data.id
+        });
+
+        returnMissiles.forEach(missile => {
+            let playerHit = false;
+            //console.log(" in onCollisionDestroy event");
+            lobby.connections.forEach(c => {
+                let player = c.player;
+
+                if(missile.activator != player.id) {
+                    let distance = missile.position.Distance(player.position);
+
+                    //if(distance < 30) 
+                    if (data.ObjCollidedWith == player.id){
+                        let isDead = player.dealDamage(100);
+                        if(isDead) {
+                            console.log('Player with id: ' + player.id + ' has died at a distance of: ' + distance);
+                            let returnData = {
+                                id: player.id
+                            }
+                            c.socket.emit('playerDied', returnData);
+                            c.socket.broadcast.to(lobby.id).emit('playerDied', returnData);
+                        } else {
+                            console.log('Player with id: ' + player.id + ' has (' + player.health + ') health left');
+                        }
+                        playerHit = true;
+                        lobby.despawnMissile(missile);
+                    }
+                }
+                   //set up explosion data 
+                //define the explosion
+                var bulletExplosion = new BulletExplosion();
+                bulletExplosion.name  = 'Player_Bullet_Explosion1';
+                bulletExplosion.activator = missile.activator;
+                bulletExplosion.position.x = missile.position.x;
+                bulletExplosion.position.y = missile.position.y;
+                bulletExplosion.position.z = missile.position.z;
+
+                lobby.bulletExplosions.push(bulletExplosion);
+
+                var returnExplosionData = {
+                    name: bulletExplosion.name,
+                    id: bulletExplosion.id,
+                    activator: bulletExplosion.activator,
+                    position: {
+                        x: bulletExplosion.position.x,
+                        y: bulletExplosion.position.y,
+                        z: bulletExplosion.position.z
+                    }
+                }
+                //console.log('Explosion TIME');
+                //emit to yourself and everyone else
+
+            connection.socket.emit('serverSpawnExplosion', returnExplosionData);
+                //only broadcast out to those in the same lobby as me
+            connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);
+        });
+
+        //if AI player is hit
+        if (!playerHit) {
+        let aiList = lobby.serverItems.filter(item => {return item instanceof AIBase});
+        aiList.forEach(ai => {
+            if (missile.activator != ai.id) {
+                let distance = missile.position.Distance(ai.position);
+                //console.log('AI distance when hit: ' + distance);
+                //console.log('AI ID from client: ' + data.collisionObjectsNetID);
+                //console.log('Collided with something: ' + JSON.stringify(data));
                 
+                //if (data.distance == 0 && ai.id == data.collisionObjectsNetID) {
+                    if (data.ObjCollidedWith == ai.id){  
+                    // console.log('AI distance when hit from client: ' + data.distance );
+                    // console.log('AI ID from server: ' + ai.id);
+                    // console.log('AI ID from client: ' + data.collisionObjectsNetID);
+                    // console.log('AI Name from client: ' + data.name);
+                    //let isDead;
+                    //console.log("data.name: " + data.name + ' ' + data.id);
+                    // if(data.name == "FLOCK_AI"){
+                    //     isDead = ai.dealDamage(50);
+                    //     //console.log("LINE- 623 - isDEAD: " + isDead);
+                    // }
+                    // if(data.name == "Asteroid1"){
+                    //     isDead = ai.dealDamage(100);
+                    // }
+                    // if(data.name == "Enemy_AI(Clone)"){
+                    //     isDead = ai.dealDamage(25);
+                    // }
+
+                    let isDead = ai.dealDamage(100);
+                    if (isDead) {
+                        console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
+                        //console.log(data.name + ' has died');
+                        let returnData = {
+                            id: ai.id
+                        }
+                        lobby.connections[0].socket.emit('playerDied', returnData);
+                        lobby.connections[0].socket.broadcast.to(lobby.id).emit('playerDied', returnData);
+
+                        //set up explosion data 
+                        //define the explosion
+                        var bulletExplosion = new BulletExplosion();
+                        bulletExplosion.name  = 'Player_Bullet_Explosion1';
+                        bulletExplosion.activator = ai.activator;
+                        //console.log('data.position.x: ' + data.position.x);
+                        bulletExplosion.position.x = missile.position.x;
+                        bulletExplosion.position.y = missile.position.y;
+                        bulletExplosion.position.z = missile.position.z;
+
+                        lobby.bulletExplosions.push(bulletExplosion);
+
+                        var returnExplosionData = {
+                            name: bulletExplosion.name,
+                            id: bulletExplosion.id,
+                            activator: bulletExplosion.activator,
+                            position: {
+                                x: bulletExplosion.position.x,
+                                y: bulletExplosion.position.y,
+                                z: bulletExplosion.position.z
+                            }
+                        }
+                        //console.log('Explosion TIME');
+                        //emit to yourself and everyone else
+
+                        connection.socket.emit('serverSpawnExplosion', returnExplosionData);
+                        //only broadcast out to those in the same lobby as me
+                        connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);    
+
+                    } else {
+                        console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
+                    }
+                }
+                playerHit = true;
+                lobby.despawnMissile(missile);
+            }});
+        
+        }
+
+            if(!playerHit) {
+                missile.isDestroyed = true;
+            }
+            //lobby.despawnBullet(bullet);
+        });        
+    }
+         
+    
+
+    despawnMissile(missile = Missile) {
+        let lobby = this;
+        let missiles = lobby.missiles;
+        let connections = lobby.connections;
+
+        //console.log('Destroying bullet (' + bullet.id + ')');
+        var index = missiles.indexOf(missile);
+        if(index > -1) {
+            missiles.splice(index, 1);
+
+            var returnData = {
+                id: missiles.id
+            }
+
+            //Send remove bullet command to players
+            connections.forEach(connection => {
+                connection.socket.emit('serverUnspawn', returnData);
+            });
+        }
+    }
+
     despawnBullet(bullet = Bullet) {
         let lobby = this;
         let bullets = lobby.bullets;
@@ -696,6 +986,28 @@ module.exports = class GameLobby extends LobbyBase {
 
             var returnData = {
                 id: bullet.id
+            }
+
+            //Send remove bullet command to players
+            connections.forEach(connection => {
+                connection.socket.emit('serverUnspawn', returnData);
+            });
+        }
+    }
+
+    
+    despawnMissile(missile = Missile) {
+        let lobby = this;
+        let missiles = lobby.missiles;
+        let connections = lobby.connections;
+
+        //console.log('Destroying bullet (' + bullet.id + ')');
+        var index = missiles.indexOf(missile);
+        if(index > -1) {
+            missiles.splice(index, 1);
+
+            var returnData = {
+                id: missile.id
             }
 
             //Send remove bullet command to players
@@ -1096,6 +1408,53 @@ module.exports = class GameLobby extends LobbyBase {
     }
 
 
+    MissileDestory(connection = Connection, data){
+        let lobby = this;
+
+        let returnMissiles = lobby.bullets.filter(missile => {
+
+            return missile.id == data.activator
+        });
+
+
+        //we weill most;y only have one entry but just incase loop through all
+        //and set to destroy
+                  //we weill most;y only have one entry but just incase loop through all
+        //and set to destroy
+        returnMissiles.forEach(missile => {
+            let playerHit = false;
+            lobby.despawnMissile(missile);
+        });
+
+
+        //define the explosion
+        var bulletExplosion = new BulletExplosion();
+        bulletExplosion.name  = 'Explosion1';
+        bulletExplosion.activator = data.activator;
+        bulletExplosion.position.x = data.position.x;
+        bulletExplosion.position.y = data.position.y;
+        bulletExplosion.position.z = data.position.z;
+
+        lobby.bulletExplosions.push(bulletExplosion);
+
+        var returnData = {
+            name: bulletExplosion.name,
+            id: bulletExplosion.id,
+            activator: bulletExplosion.activator,
+            position: {
+                x: bulletExplosion.position.x,
+                y: bulletExplosion.position.y,
+                z: bulletExplosion.position.z
+            }
+        }
+                //console.log('Explosion TIME');
+
+
+        connection.socket.emit('serverSpawnExplosion', returnData);
+        //only broadcast out to those in the same lobby as me
+        connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnData);
+    }
+
     BulletDestory(connection = Connection, data){
         let lobby = this;
 
@@ -1182,7 +1541,7 @@ module.exports = class GameLobby extends LobbyBase {
         }
     }
 
-    despawnBullet(bullet = Bullet) {
+    despawnBullet(bullet = Bullet, Missile) {
         let lobby = this;
         let bullets = lobby.bullets;
         let connections = lobby.connections;

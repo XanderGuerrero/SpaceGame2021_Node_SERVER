@@ -5,7 +5,7 @@ module.exports = class Bullet extends ServerObject{
     constructor() {
         super();//go to the class you inherited from to see what runs first
         this.direction = new vector3();
-        this.speed = 50;
+        this.speed = 175;
         this.isDestoryed = false;
         this.activator = '';
     }
