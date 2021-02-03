@@ -1,28 +1,26 @@
-var shortID = require('shortid');
-var Vector3 = require('./Vector3.js');
+let ServerItem = require('../Utility/ServerItem')
+let Vector3 = require('../Vector3')
 
-//export class
-module.exports = class Player{
-    constructor(){
-        //class variables
-        this.username = 'Default_Player';
-        this.id = shortID.generate();
-        this.position = new Vector3();
-        this.barrelRotation = new Number(0);
-        this.shipTiltRotation = new Number(0);
-        this.shipTiltRotationX = new Number(0);
-        this.shipTiltRotationY = new Number(0);
-        this.zTiltValue = new Number(0);
-        this.lobby = 0;
+module.exports = class AIBase extends ServerItem {
+    constructor() {
+        super();
+        this.username = "AI_Base";
+
         this.health = new Number(100);
         this.isDead = false;
         this.respawnTicker = new Number(0);
         this.respawnTime = new Number(0);
+        this.speed = .1;
+        this.rotationSpeed = .1;
     }
 
-    displayPlayerInformation(){
-        let player = this;
-        return '(' + player.username + ':' + player.id + ')';
+    onUpdate(onUpdateAI) {
+        //Calculate Statemachine
+        //console.log('AI_Update');
+    }
+
+    onObtainTarget(connections) {
+
     }
 
     respawnCounter(){
@@ -33,22 +31,19 @@ module.exports = class Player{
             this.respawnTime = this.respawnTime + 1;
 
             //3 second respond time
-            //set everything back to defaults
-            //return true (back to life)
             if(this.respawnTime >= 3){
-                console.log('respawning player id : ' + this.id);
+                console.log('respawning AI id : ' + this.id);
                 this.isDead = false;
                 this.respawnTicker = new Number(0);
                 this.respawnTime = new Number(0);
                 this.health = new Number(100);
-                this.position = new Vector3(-8,5,10);
+                this.position = new Vector3(Math.floor(Math.random() * (100 - 0)) + 0, Math.floor(Math.random() * (100 - 0)) + 0, 400);
 
                 return true;
             }
         }
         return false;
     }
-
 
     dealDamage(amount = Number)
     {
@@ -64,4 +59,26 @@ module.exports = class Player{
         }
         return this.isDead;
     }
+
+    radiansToDegrees(){
+        return new Number(57.29578);//360/(PI * 2);
+    }
+
+    degreesToRadians(){
+        return new Number(0.01745329);
+    }
+
+
+    worldUpVector(){
+        return new Vector3(0, 0, 1);
+    }
+
+    getAngleDifference(one, two){
+        
+        let diff = (two - one + 180) % 360 - 180;
+        //console.log("difference : " + diff);
+        return diff < -180 ? diff + 360 : diff;
+        //return diff > 180 ? 360 - diff : diff;
+    }
 }
+

@@ -1,3 +1,7 @@
+//ws://127.0.0.1:52300/socket.io/?EIO=4&transport=websocket - LOCAL PORT
+//ws://live-3d-space-shootgame-server.herokuapp.com:80/socket.io/?EIO=4&transport=websocket - FOR ONLINE
+//https://live-3d-space-shootgame-server.herokuapp.com/
+
 var io = require('socket.io')(process.env.PORT || 52300);//use socket.io and use the defined port otherwise use 52300
 let Server = require('./Classes/Server');
 
@@ -270,21 +274,21 @@ io.on('connection', function(socket) {
 //     });
 // });
 
-function interval(func, wait, times) {
-    var interv = function(w, t){
-        return function(){
-            if(typeof t === "undefined" || t-- > 0){
-                setTimeout(interv, w);
-                try{
-                    func.call(null);
-                }
-                catch(e){
-                    t = 0;
-                    throw e.toString();
-                }
-            }
-        };
-    }(wait, times);
+// function interval(func, wait, times) {
+//     var interv = function(w, t){
+//         return function(){
+//             if(typeof t === "undefined" || t-- > 0){
+//                 setTimeout(interv, w);
+//                 try{
+//                     func.call(null);
+//                 }
+//                 catch(e){
+//                     t = 0;
+//                     throw e.toString();
+//                 }
+//             }
+//         };
+//     }(wait, times);
 
-    setTimeout(interv, wait);
-}
+//     setTimeout(interv, wait);
+// }
