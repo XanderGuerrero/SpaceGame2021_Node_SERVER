@@ -352,7 +352,7 @@ module.exports = class GameLobby extends LobbyBase {
         let missiles = lobby.missiles;
         let connections = lobby.connections;
         let serverItems = lobby.serverItems;
-        let lockedTarget = new Vector3();
+
         
         //go through all the bullets
         missiles.forEach(missile => {
@@ -360,14 +360,7 @@ module.exports = class GameLobby extends LobbyBase {
             //let aiEnemyList = serverItems.filter(item => {return item instanceof FlockAI;});
             //console.log(util.inspect(aiEnemyList));
             //missile.onObtainTarget(aiEnemyList);
-            let aiEnemy = serverItems.filter(item => {return item instanceof FlockAI;});
-            aiEnemy.filter(item =>{
-                 if(item.id == missile.target){
-                    lockedTarget.x = item.position.x;
-                    lockedTarget.y = item.position.y;
-                    lockedTarget.z = item.position.z;
-                }
-            })
+   
             //check if its destoryed by calling on update
             //it returns a bool
                 let isDestroyed = missile.onUpdate(data => {
@@ -376,7 +369,7 @@ module.exports = class GameLobby extends LobbyBase {
                         //console.log(JSON.stringify(data));
                         socket.emit('UpdateMissileAI', data);                 
                     });
-                }, connections, serverItems,lockedTarget)
+                }, connections, serverItems)
 
                 //if the bullet is destoryed
                 if(isDestroyed){
@@ -675,7 +668,7 @@ module.exports = class GameLobby extends LobbyBase {
 
                     //if(distance < 30) 
                     if (data.ObjCollidedWith == player.id){
-                        let isDead = player.dealDamage(50);
+                        let isDead = player.dealDamage(5);
                         if(isDead) {
                             console.log('Player with id: ' + player.id + ' has died at a distance of: ' + distance);
                             let returnData = {
@@ -748,7 +741,7 @@ module.exports = class GameLobby extends LobbyBase {
                     //     isDead = ai.dealDamage(25);
                     // }
 
-                    let isDead = ai.dealDamage(50);
+                    let isDead = ai.dealDamage(25);
                     if (isDead) {
                         console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
                         //console.log(data.name + ' has died');
@@ -897,7 +890,7 @@ module.exports = class GameLobby extends LobbyBase {
 
                     let isDead = ai.dealDamage(100);
                     if (isDead) {
-                        console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
+                        //console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
                         //console.log(data.name + ' has died');
                         let returnData = {
                             id: ai.id
@@ -935,7 +928,7 @@ module.exports = class GameLobby extends LobbyBase {
                         connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);    
 
                     } else {
-                        console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
+                        //console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
                     }
                 }
                 playerHit = true;
@@ -958,7 +951,7 @@ module.exports = class GameLobby extends LobbyBase {
         let missiles = lobby.missiles;
         let connections = lobby.connections;
 
-        //console.log('Destroying bullet (' + bullet.id + ')');
+        //console.log('Destroying missile (' + missile.id + ')');
         var index = missiles.indexOf(missile);
         if(index > -1) {
             missiles.splice(index, 1);
@@ -996,26 +989,26 @@ module.exports = class GameLobby extends LobbyBase {
     }
 
     
-    despawnMissile(missile = Missile) {
-        let lobby = this;
-        let missiles = lobby.missiles;
-        let connections = lobby.connections;
+    // despawnMissile(missile = Missile) {
+    //     let lobby = this;
+    //     let missiles = lobby.missiles;
+    //     let connections = lobby.connections;
 
-        //console.log('Destroying bullet (' + bullet.id + ')');
-        var index = missiles.indexOf(missile);
-        if(index > -1) {
-            missiles.splice(index, 1);
+    //     //console.log('Destroying bullet (' + bullet.id + ')');
+    //     var index = missiles.indexOf(missile);
+    //     if(index > -1) {
+    //         missiles.splice(index, 1);
 
-            var returnData = {
-                id: missile.id
-            }
+    //         var returnData = {
+    //             id: missile.id
+    //         }
 
-            //Send remove bullet command to players
-            connections.forEach(connection => {
-                connection.socket.emit('serverUnspawn', returnData);
-            });
-        }
-    }
+    //         //Send remove bullet command to players
+    //         connections.forEach(connection => {
+    //             connection.socket.emit('serverUnspawn', returnData);
+    //         });
+    //     }
+    // }
         //         //let returns multiple items
         //         //check to see if this object exists on the server
         //         //returns 1 if true and the object it matches with data.id
@@ -1408,15 +1401,15 @@ module.exports = class GameLobby extends LobbyBase {
     }
 
 
-    MissileDestory(connection = Connection, data){
+    MissileDestroy(connection = Connection, data){
         let lobby = this;
 
-        let returnMissiles = lobby.bullets.filter(missile => {
+        let returnMissiles = lobby.missiles.filter(missile => {
 
             return missile.id == data.activator
         });
 
-
+       // console.log('Explosion TIME 1');
         //we weill most;y only have one entry but just incase loop through all
         //and set to destroy
                   //we weill most;y only have one entry but just incase loop through all

@@ -59,8 +59,8 @@ module.exports = class Connection{
             connection.lobby.BulletDestory(connection, data);
         });
 
-        socket.on('MissileDestory', function(data){
-            connection.lobby.MissileDestory(connection, data);
+        socket.on('MissileDestroy', function(data){
+            connection.lobby.MissileDestroy(connection, data);
         });
         socket.on('DestroyExplosion', function(data){
             connection.lobby.DestroyExplosion(connection, data);
