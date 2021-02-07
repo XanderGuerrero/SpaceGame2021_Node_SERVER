@@ -10,7 +10,7 @@ module.exports = class Missile extends ServerObject{
     constructor() {
         super();//go to the class you inherited from to see what runs first
         this.direction = new Vector3();
-        this.speed = 15;
+        this.speed = 25;
         this.isDestoryed = false;
         this.activator = '';
         this.target = new Vector3();
