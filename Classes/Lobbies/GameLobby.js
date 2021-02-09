@@ -22,6 +22,7 @@ module.exports = class GameLobby extends LobbyBase {
         this.bullets = [];
         this.bulletExplosions = [];
         this.missiles = [];
+        this.switchExplosion = 0;
     }
 
     //called every cycle
@@ -754,7 +755,7 @@ module.exports = class GameLobby extends LobbyBase {
                         //set up explosion data 
                         //define the explosion
                         var bulletExplosion = new BulletExplosion();
-                        bulletExplosion.name  = 'Player_Bullet_Explosion1';
+                        bulletExplosion.name  = 'Object_Destoryed_Explosion';
                         bulletExplosion.activator = ai.activator;
                         //console.log('data.position.x: ' + data.position.x);
                         bulletExplosion.position.x = bullet.position.x;
@@ -799,6 +800,8 @@ module.exports = class GameLobby extends LobbyBase {
 
     missileCollisionDestroy(connection = Connection, data){
         let lobby = this;
+
+
         console.log(" in missileCollisionDestroy event");
         let returnMissiles = lobby.missiles.filter(missile => {
             return missile.id == data.id
@@ -833,7 +836,16 @@ module.exports = class GameLobby extends LobbyBase {
                    //set up explosion data 
                 //define the explosion
                 var bulletExplosion = new BulletExplosion();
-                bulletExplosion.name  = 'Player_Bullet_Explosion1';
+                if(this.switchExplosion == 0){
+                    bulletExplosion.name  = 'Object_Destoryed_Explosion';
+                    this.switchExplosion = 1;
+                    console.log("Explosion1");
+                }
+                else{
+                    bulletExplosion.name  = 'Object_Destoryed_Explosion2';
+                    this.switchExplosion = 0;
+                    console.log("Explosion2");
+                }
                 bulletExplosion.activator = missile.activator;
                 bulletExplosion.position.x = missile.position.x;
                 bulletExplosion.position.y = missile.position.y;
@@ -901,7 +913,7 @@ module.exports = class GameLobby extends LobbyBase {
                         //set up explosion data 
                         //define the explosion
                         var bulletExplosion = new BulletExplosion();
-                        bulletExplosion.name  = 'Player_Bullet_Explosion1';
+                        bulletExplosion.name  = 'Object_Destoryed_Explosion';
                         bulletExplosion.activator = ai.activator;
                         //console.log('data.position.x: ' + data.position.x);
                         bulletExplosion.position.x = missile.position.x;
