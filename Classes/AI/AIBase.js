@@ -5,7 +5,6 @@ module.exports = class AIBase extends ServerItem {
     constructor() {
         super();
         this.username = "AI_Base";
-
         this.health = new Number(100);
         this.isDead = false;
         this.respawnTicker = new Number(0);

@@ -11,6 +11,13 @@ module.exports = class ServerItem {
 
     }
 
-    
+    onUpdate(onUpdateAI) {
+        //Calculate Statemachine
+        //console.log('AI_Update');
+    }
+
+    onObtainTarget(connections) {
+
+    }
 
 }

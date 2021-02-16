@@ -8,7 +8,7 @@ let Vector3 = require('../Vector3')
 let ServerItem = require('../Utility/ServerItem')
 let AIBase = require('../AI/AIBase')
 let Missile = require('../Missile')
-// let Asteroid1 = require('../AI/Asteroid1')
+let Asteroid1 = require('../AI/Asteroid')
 let EnemyAI = require('../AI/EnemyAI')
 let FlockAI = require('../AI/FlockAI')
 var util = require('util')
@@ -101,18 +101,24 @@ module.exports = class GameLobby extends LobbyBase {
         });
 
         //  //filter and get all Asteroid1 from serverItems
-        //  let asteroid1List = serverItems.filter(item => {return item instanceof Asteroid1;});
-        //  //let aiList = serverItems.filter(item => {return item instanceof AIBase;});
-        //  asteroid1List.forEach(ai => {
-        //      //Update each ai unity, passing in a function for those that need to update other connections
-        //      ai.onUpdate(data => {
-        //          lobby.connections.forEach(connection => {
-        //              //let socket = connection.socket;
-        //              //console.log(JSON.stringify(data));
-        //              //socket.emit('updatePosition', data);
-        //          });
-        //      }); 
-        //  });
+         let asteroid1List = serverItems.filter(item => {return item instanceof Asteroid1;});
+         let aiAsteroidList = asteroid1List;
+         //let aiList = serverItems.filter(item => {return item instanceof AIBase;});
+         asteroid1List.forEach(asteroid => {
+
+            asteroid.onObtainTarget(lobby.connections);
+             //Update each ai unity, passing in a function for those that need to update other connections
+             asteroid.onUpdate(data => {
+                 lobby.connections.forEach(connection => {
+                    let socket = connection.socket;
+                    //console.log(JSON.stringify(data));
+                    socket.emit('UpdateAI', data); 
+                     //let socket = connection.socket;
+                     //console.log(JSON.stringify(data));
+                     //socket.emit('updatePosition', data);
+                 });
+             }); 
+         });
 
         //super.onUpdate();
         //update the bullets
@@ -148,7 +154,7 @@ module.exports = class GameLobby extends LobbyBase {
             lobby.onSpawnAllPlayersIntoGame();
             //lobby.onSpawnAIIntoGame();
             lobby.onSpawnFlockAIIntoGame();
-            //lobby.onSpawnAsteroidsIntoGame();
+            lobby.onSpawnAsteroidsIntoGame();
         }
 
 
@@ -279,21 +285,52 @@ module.exports = class GameLobby extends LobbyBase {
 
     onSpawnAsteroidsIntoGame() {
         let lobby = this;
+        let connections = lobby.connections;
 
         var min = Math.ceil(100);
         var max = Math.floor(200);
         //this.position = new Vector3(Math.floor(Math.random() * (max - min)) + min, 0, Math.floor(Math.random() * (max - min)) + min);
 
-        for(var i = 0; i < 550; i++)
-        {
+         //go through all players and check their positions before
+        //setting the enemies position to avoid spawning in the 
+        //same spot as something else
+        for (var i = 0; i < 200; i++) {
+
+            //calculate a random x,y,z coordinate
+            let X = Math.floor(Math.random() * (1500 - (-1500))) + (-1500);
+            let Y = Math.floor(Math.random() * (1500 - (-1500))) + (-1500);
+            let Z = Math.floor(Math.random() * (1500 - (-1500))) + (-1500);
+
+            connections.forEach(connection => {
+                //if the x,y,z values created above are not
+                //this players position
+                if((X == connection.player.position.x) 
+                        && (Y == connection.player.position.y)
+                            && (Z  == connection.player.position.z)){  
+                                //generate new coordinates
+                                X = connection.player.position.x + Math.floor(Math.random() * (1500 - (-1500))) + (-1500);
+                                Y = connection.player.position.y + Math.floor(Math.random() * (1500 - (-1500))) + (-1500);
+                                Z = connection.player.position.z + Math.floor(Math.random() * (1500 - (-1500))) + (-1500);    
+                }
+            });  
+            //go through each players position
+            //and check that we are not spawning at the 
+            //same position as one of the players
+            //call lobby base onserverspawn and send the object you want to create
+            //and its position in the game
+            //you can call this many times to create multiple objects
+            lobby.onServerSpawn(new Asteroid1(), new Vector3(X, Y, Z));
+        } 
+        //for(var i = 0; i < 550; i++)
+        //{
             //var Asteroid_AI = new Asteroid1();
             //Asteroid_AI.position.x = 0;//Math.floor(Math.random() * (max - min)) + min;
             //Asteroid_AI.position.y = 0;//Math.floor(Math.random() * (max - min)) + min;
             //Asteroid_AI.position.z = 600;//Math.floor(Math.random() * (max - min)) + min;
             //new Vector3( Math.floor(Math.random() * (max - min)) + min,  Math.floor(Math.random() * (100 - (-100)) + (-20)), Math.floor(Math.random() * (1000 - 500)) + 500 );
             //console.log('asteroids position: X: ' + Asteroid_AI.position.x + '  Y:' + Asteroid_AI.position.y + ' Z:' + Asteroid_AI.position.z);
-            lobby.onServerSpawn(new Asteroid1(), new Vector3(0,0,0));
-        }
+            //lobby.onServerSpawn(new Asteroid1(), new Vector3(0,0,0));
+        //}
     }
 
 
@@ -446,64 +483,64 @@ module.exports = class GameLobby extends LobbyBase {
             }
         });
 
-        // let Asteroid1List = lobby.serverItems.filter(item => {return item instanceof Asteroid1/*AIBase*/;});
-        // Asteroid1List.forEach(asteroid => {
-        //     if(asteroid.isDead) {
-        //         let isRespawn = asteroid.respawnCounter();
-        //         if(isRespawn) {
-        //             let socket = connections[0].socket;
+        let Asteroid1List = lobby.serverItems.filter(item => {return item instanceof Asteroid1/*AIBase*/;});
+        Asteroid1List.forEach(asteroid => {
+            if(asteroid.isDead) {
+                let isRespawn = asteroid.respawnCounter();
+                if(isRespawn) {
+                    let socket = connections[0].socket;
 
-        //             //Set Position
-        //             //item.position = location;
-        //             asteroid.position.x = Math.floor(Math.random() * (600 - (-300))) + (-300);
-        //             asteroid.position.y = Math.floor(Math.random() * (100 - (-100))) + (-100);
-        //             asteroid.position.z = Math.floor(Math.random() * (1000 - 100)) + 200;
+                    //Set Position
+                    //item.position = location;
+                    asteroid.position.x = Math.floor(Math.random() * (600 - (-300))) + (-300);
+                    asteroid.position.y = Math.floor(Math.random() * (100 - (-100))) + (-100);
+                    asteroid.position.z = Math.floor(Math.random() * (1000 - 100)) + 200;
 
-        //             asteroid.direction.x = 0;//Math.floor(Math.random() * (1 - 0)) + 0;
-        //             asteroid.direction.y = 0;//Math.floor(Math.random() * (1 - 0)) + 0;
-        //             asteroid.direction.z = -1;
-        //             asteroid.speed = Math.floor(Math.random() * (7 - 3)) + 3;
-        //             asteroid.tumble = Math.floor(Math.random() * (7 - .5)) + .5;
-        //             asteroid.scale.x = Math.floor(Math.random() * (25 - 10)) + 10;
-        //             asteroid.scale.y = Math.floor(Math.random() * (25 - 10)) + 10;
-        //             asteroid.scale.z = Math.floor(Math.random() * (15 - 5)) + 5;
+                    asteroid.direction.x = 0;//Math.floor(Math.random() * (1 - 0)) + 0;
+                    asteroid.direction.y = 0;//Math.floor(Math.random() * (1 - 0)) + 0;
+                    asteroid.direction.z = -1;
+                    asteroid.speed = Math.floor(Math.random() * (7 - 3)) + 3;
+                    asteroid.tumble = Math.floor(Math.random() * (7 - .5)) + .5;
+                    asteroid.scale.x = Math.floor(Math.random() * (25 - 10)) + 10;
+                    asteroid.scale.y = Math.floor(Math.random() * (25 - 10)) + 10;
+                    asteroid.scale.z = Math.floor(Math.random() * (15 - 5)) + 5;
 
-        //             asteroid.rotationX = Math.floor(Math.random() * (7 - .5)) + .5;
-        //             asteroid.rotationY = Math.floor(Math.random() * (7 - .5)) + .5;
-        //             asteroid.rotationZ = Math.floor(Math.random() * (7 - .5)) + .5;
+                    asteroid.rotationX = Math.floor(Math.random() * (7 - .5)) + .5;
+                    asteroid.rotationY = Math.floor(Math.random() * (7 - .5)) + .5;
+                    asteroid.rotationZ = Math.floor(Math.random() * (7 - .5)) + .5;
 
-        //             let returnData = {
-        //                 id: asteroid.id,
-        //                 name: asteroid.username,
-        //                 position: {
-        //                     //how to random generate values: Math.floor(Math.random() * (max - min)) + min
-        //                     x: asteroid.position.x,
-        //                     y: asteroid.position.y,
-        //                     z: asteroid.position.z
-        //                 },
-        //                 direction: {
-        //                     x: asteroid.direction.x,
-        //                     y: asteroid.direction.y,
-        //                     z: asteroid.direction.z
-        //                 },
-        //                 scale: {
-        //                     x: asteroid.scale.x,
-        //                     y: asteroid.scale.y,
-        //                     z: asteroid.scale.z
-        //                 },
-        //                 speed: asteroid.speed,
-        //                 tumble: asteroid.tumble,
-        //                 rotationX: asteroid.rotationX,
-        //                 rotationY: asteroid.rotationY,
-        //                 rotationZ: asteroid.rotationZ
+                    let returnData = {
+                        id: asteroid.id,
+                        name: asteroid.username,
+                        position: {
+                            //how to random generate values: Math.floor(Math.random() * (max - min)) + min
+                            x: asteroid.position.x,
+                            y: asteroid.position.y,
+                            z: asteroid.position.z
+                        },
+                        direction: {
+                            x: asteroid.direction.x,
+                            y: asteroid.direction.y,
+                            z: asteroid.direction.z
+                        },
+                        scale: {
+                            x: asteroid.scale.x,
+                            y: asteroid.scale.y,
+                            z: asteroid.scale.z
+                        },
+                        speed: asteroid.speed,
+                        tumble: asteroid.tumble,
+                        rotationX: asteroid.rotationX,
+                        rotationY: asteroid.rotationY,
+                        rotationZ: asteroid.rotationZ
                     
-        //             }
-        //             //console.log("return data : " + returnData);
-        //             socket.emit('AsteroidRespawn', returnData);
-        //             socket.broadcast.to(lobby.id).emit('AsteroidRespawn', returnData);
-        //         }
-        //     }
-        // });
+                    }
+                    //console.log("return data : " + returnData);
+                    socket.emit('AsteroidRespawn', returnData);
+                    socket.broadcast.to(lobby.id).emit('AsteroidRespawn', returnData);
+                }
+            }
+        });
     }
 
 
@@ -556,7 +593,7 @@ module.exports = class GameLobby extends LobbyBase {
     fireMissile(connection = Connection, data, isAI = false){
         let lobby = this;
 
-        console.log(JSON.stringify(data));
+        //console.log(JSON.stringify(data));
         var missile = new Missile();
         missile.name  = 'Missile';
         missile.activator = data.activator;
@@ -568,7 +605,7 @@ module.exports = class GameLobby extends LobbyBase {
         missile.target.y = data.target.y;
         missile.target.z = data.target.z;
         missile.targetId = data.targetId;
-        console.log("target: " +  missile.target.x);
+        //console.log("target: " +  missile.target.x);
         missile.hasTarget = true;
         missile.direction.x = data.direction.x;
         missile.direction.y = data.direction.y;
@@ -708,88 +745,88 @@ module.exports = class GameLobby extends LobbyBase {
                 //console.log('Explosion TIME');
                 //emit to yourself and everyone else
 
-            connection.socket.emit('serverSpawnExplosion', returnExplosionData);
-                //only broadcast out to those in the same lobby as me
-            connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);
-        });
+                connection.socket.emit('serverSpawnExplosion', returnExplosionData);
+                    //only broadcast out to those in the same lobby as me
+                connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);
+            });
 
-        //if AI player is hit
-        if (!playerHit) {
-        let aiList = lobby.serverItems.filter(item => {return item instanceof AIBase});
-        aiList.forEach(ai => {
-            if (bullet.activator != ai.id) {
-                let distance = bullet.position.Distance(ai.position);
-                //console.log('AI distance when hit: ' + distance);
-                //console.log('AI ID from client: ' + data.collisionObjectsNetID);
-                //console.log('Collided with something: ' + JSON.stringify(data));
-                
-                //if (data.distance == 0 && ai.id == data.collisionObjectsNetID) {
-                    if (data.ObjCollidedWith == ai.id){  
-                    // console.log('AI distance when hit from client: ' + data.distance );
-                    // console.log('AI ID from server: ' + ai.id);
-                    // console.log('AI ID from client: ' + data.collisionObjectsNetID);
-                    // console.log('AI Name from client: ' + data.name);
-                    //let isDead;
-                    //console.log("data.name: " + data.name + ' ' + data.id);
-                    // if(data.name == "FLOCK_AI"){
-                    //     isDead = ai.dealDamage(50);
-                    //     //console.log("LINE- 623 - isDEAD: " + isDead);
-                    // }
-                    // if(data.name == "Asteroid1"){
-                    //     isDead = ai.dealDamage(100);
-                    // }
-                    // if(data.name == "Enemy_AI(Clone)"){
-                    //     isDead = ai.dealDamage(25);
-                    // }
+            //if AI player is hit
+            if (!playerHit) {
+            let aiList = lobby.serverItems.filter(item => {return item instanceof AIBase});
+            aiList.forEach(ai => {
+                if (bullet.activator != ai.id) {
+                    let distance = bullet.position.Distance(ai.position);
+                    //console.log('AI distance when hit: ' + distance);
+                    //console.log('AI ID from client: ' + data.collisionObjectsNetID);
+                    //console.log('Collided with something: ' + JSON.stringify(data));
+                    
+                    //if (data.distance == 0 && ai.id == data.collisionObjectsNetID) {
+                        if (data.ObjCollidedWith == ai.id){  
+                        // console.log('AI distance when hit from client: ' + data.distance );
+                        // console.log('AI ID from server: ' + ai.id);
+                        // console.log('AI ID from client: ' + data.collisionObjectsNetID);
+                        // console.log('AI Name from client: ' + data.name);
+                        //let isDead;
+                        //console.log("data.name: " + data.name + ' ' + data.id);
+                        // if(data.name == "FLOCK_AI"){
+                        //     isDead = ai.dealDamage(50);
+                        //     //console.log("LINE- 623 - isDEAD: " + isDead);
+                        // }
+                        // if(data.name == "Asteroid1"){
+                        //     isDead = ai.dealDamage(100);
+                        // }
+                        // if(data.name == "Enemy_AI(Clone)"){
+                        //     isDead = ai.dealDamage(25);
+                        // }
 
-                    let isDead = ai.dealDamage(25);
-                    if (isDead) {
-                        console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
-                        //console.log(data.name + ' has died');
-                        let returnData = {
-                            id: ai.id
-                        }
-                        lobby.connections[0].socket.emit('playerDied', returnData);
-                        lobby.connections[0].socket.broadcast.to(lobby.id).emit('playerDied', returnData);
-
-                        //set up explosion data 
-                        //define the explosion
-                        var bulletExplosion = new BulletExplosion();
-                        bulletExplosion.name  = 'Object_Destoryed_Explosion';
-                        bulletExplosion.activator = ai.activator;
-                        //console.log('data.position.x: ' + data.position.x);
-                        bulletExplosion.position.x = bullet.position.x;
-                        bulletExplosion.position.y = bullet.position.y;
-                        bulletExplosion.position.z = bullet.position.z;
-
-                        lobby.bulletExplosions.push(bulletExplosion);
-
-                        var returnExplosionData = {
-                            name: bulletExplosion.name,
-                            id: bulletExplosion.id,
-                            activator: bulletExplosion.activator,
-                            position: {
-                                x: bulletExplosion.position.x,
-                                y: bulletExplosion.position.y,
-                                z: bulletExplosion.position.z
+                        let isDead = ai.dealDamage(25);
+                        if (isDead) {
+                            console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
+                            //console.log(data.name + ' has died');
+                            let returnData = {
+                                id: ai.id
                             }
+                            lobby.connections[0].socket.emit('playerDied', returnData);
+                            lobby.connections[0].socket.broadcast.to(lobby.id).emit('playerDied', returnData);
+
+                            //set up explosion data 
+                            //define the explosion
+                            var bulletExplosion = new BulletExplosion();
+                            bulletExplosion.name  = 'Object_Destoryed_Explosion';
+                            bulletExplosion.activator = ai.activator;
+                            //console.log('data.position.x: ' + data.position.x);
+                            bulletExplosion.position.x = bullet.position.x;
+                            bulletExplosion.position.y = bullet.position.y;
+                            bulletExplosion.position.z = bullet.position.z;
+
+                            lobby.bulletExplosions.push(bulletExplosion);
+
+                            var returnExplosionData = {
+                                name: bulletExplosion.name,
+                                id: bulletExplosion.id,
+                                activator: bulletExplosion.activator,
+                                position: {
+                                    x: bulletExplosion.position.x,
+                                    y: bulletExplosion.position.y,
+                                    z: bulletExplosion.position.z
+                                }
+                            }
+                            //console.log('Explosion TIME');
+                            //emit to yourself and everyone else
+
+                            connection.socket.emit('serverSpawnExplosion', returnExplosionData);
+                            //only broadcast out to those in the same lobby as me
+                            connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);    
+
+                        } else {
+                            console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
                         }
-                        //console.log('Explosion TIME');
-                        //emit to yourself and everyone else
-
-                        connection.socket.emit('serverSpawnExplosion', returnExplosionData);
-                        //only broadcast out to those in the same lobby as me
-                        connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);    
-
-                    } else {
-                        console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
                     }
-                }
-                playerHit = true;
-                lobby.despawnBullet(bullet);
-            }});
-        
-        }
+                    playerHit = true;
+                    lobby.despawnBullet(bullet);
+                }});
+            
+            }
 
             if(!playerHit) {
                 bullet.isDestroyed = true;

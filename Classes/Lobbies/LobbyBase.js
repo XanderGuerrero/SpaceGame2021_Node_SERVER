@@ -55,8 +55,9 @@ module.exports = class LobbyBase{
        
         //Set item into the array
         serverItems.push(item);
+        item.position = location;
         console.log(JSON.stringify('Spawning this gameObject: ' + item.username + ' ' + item.id));
-    //     if(item.username == "Asteroid1"){
+         if(item.username == "ASTEROID_AI"){
           
 
     //             do
@@ -108,17 +109,17 @@ module.exports = class LobbyBase{
     //         // item.direction.y = 0;//Math.floor(Math.random() * (1 - 0)) + 0;
     //         // item.direction.z = -1;
     //          //item.speed = Math.random() * (7 - 1) + 1;
-    //         // item.tumble = 5;//Math.floor(Math.random() * (7 - .5)) + .5;
-    //         //scale of the asteroid
-    //         item.scale.x = Math.random() * (7 - 1) + 1;
-    //         item.scale.y = Math.random() * (7 - 1) + 1;
-    //         item.scale.z = Math.random() * (7 - 1) + 1;
+            item.tumble = Math.floor(Math.random() * (20 - 0)) + 0;
+            //scale of the asteroid
+            item.scale.x = Math.random() * (50 - 3) + 3;
+            item.scale.y = Math.random() * (50 - 3) + 3;
+            item.scale.z = Math.random() * (50 - 3) + 3;
 
     //         // item.rotationX = 5;//Math.floor(Math.random() * (7 - .5)) + .5;
     //         // item.rotationY = 5;//Math.floor(Math.random() * (7 - .5)) + .5;
     //         // item.rotationZ = 5;//Math.floor(Math.random() * (7 - .5)) + .5;
     //         //Tell everyone in the room
-    //         connections.forEach(connection => {
+            connections.forEach(connection => {
                
                  
     //                 //send the packet of data required to spawn an asteroid
@@ -127,27 +128,22 @@ module.exports = class LobbyBase{
     //                 //the client will handle the movement 
     //                 //tp make it smooth and the asteroid gameobject will
     //                 //report its position back to the server
-    //                 let returnData = {
-    //                     id: item.id,
-    //                     name: item.username,
-    //                     activator: 'Server',
-    //                     position: {
-    //                         //how to random generate values: Math.floor(Math.random() * (max - min)) + min
-    //                         x: worldPosition.x,
-    //                         y: worldPosition.y,
-    //                         z: worldPosition.z
-    //                     },
-    //                     scale: {
-    //                         x: item.scale.x,
-    //                         y: item.scale.y,
-    //                         z: item.scale.z
-    //                     },
-    //                     speed: item.speed,
-    //                     tumble: item.tumble,
-    //                     rotationX: item.rotationX,
-    //                     rotationY: item.rotationY,
-    //                     rotationZ: item.rotationZ
-    //                 }
+                    let Data = {
+                        id: item.id,
+                        name: item.username,
+                        activator: 'Server',
+                        position: item.position.JSONData(),
+                        scale: {
+                            x: item.scale.x,
+                            y: item.scale.y,
+                            z: item.scale.z
+                        },
+                        //speed: item.speed,
+                        tumble: item.tumble,
+                        // rotationX: item.rotationX,
+                        // rotationY: item.rotationY,
+                        // rotationZ: item.rotationZ
+                    }
 
 
     //                 // let returnData = {
@@ -180,9 +176,9 @@ module.exports = class LobbyBase{
     //                 //console.log("position: " + returnData.position.x);
     //                 //console.log("position: " + util.inspect(returnData.position, false, null, true /* enable colors */));
     //                 //console.log("direction: " + util.inspect(returnData.direction, false, null, true /* enable colors */));
-    //                 connection.socket.emit('serverSpawn', returnData);
+                     connection.socket.emit('serverSpawn', Data);
                 
-    //         });
+            });
     //         //comment
     //         //     connection.socket.emit('serverSpawn', {
     //         //         id: item.id,
@@ -192,13 +188,13 @@ module.exports = class LobbyBase{
     //         //         //speed: item.speed
     //         //     });
     //         // });
-    //    //}
+            //}
             
-        //}
-        //else{
+        }
+        else{
             //Tell everyone in the room
             console.log(JSON.stringify(location))
-            item.position = location;
+            //item.position = location;
             connections.forEach(connection => {
                 connection.socket.emit('serverSpawn', {
                     id: item.id,
@@ -206,7 +202,7 @@ module.exports = class LobbyBase{
                     position: item.position.JSONData()
                 });
             });
-        //}
+        }
     }
 
     
