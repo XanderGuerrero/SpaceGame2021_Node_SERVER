@@ -70,7 +70,7 @@ module.exports = class FlockAI extends AIBase{
         let distance2 = ai.position.Distance(new Vector3(-1000,0,0));
         //console.log("distance to target: " + distance);
         
-        if(Math.abs(distance1) > 2000  || Math.abs(distance2) > 2500) {
+        if(Math.abs(distance1) > 5000  || Math.abs(distance2) > 5000) {
 
             this.turning = true;
             
@@ -265,7 +265,7 @@ module.exports = class FlockAI extends AIBase{
         //find the closest target and go after
         let availableTargets = connections.filter(connection =>{
             let player = connection.player;
-            return ai.position.Distance(player.position) < 4000;
+            return ai.position.Distance(player.position) < 20000;
         });
 
         //sort through to find the closest oppoent; perhaps in the future you can

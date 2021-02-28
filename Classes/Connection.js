@@ -41,9 +41,9 @@ module.exports = class Connection{
             connection.lobby.onAsteroidUpdateDirection(connection, data);
         });
 
-        // socket.on('AsteroidCollisionDestroy', function(data) {
-        //     connection.lobby.onCollisionDestroy(connection, data);
-        // });
+        socket.on('asteroidCollisionDestroy', function(data) {
+            connection.lobby.onAsteroidCollisionDestroy(connection, data);
+        });
 
         socket.on('missileCollisionDestroy', function(data) {
             //console.log(" in connection.js");

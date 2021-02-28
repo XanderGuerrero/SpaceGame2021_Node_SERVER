@@ -18,6 +18,7 @@ module.exports = class Player{
         this.isDead = false;
         this.respawnTicker = new Number(0);
         this.respawnTime = new Number(0);
+        this.score = new Number(0);
     }
 
     displayPlayerInformation(){
