@@ -156,7 +156,7 @@ module.exports = class GameLobby extends LobbyBase {
             lobby.onSpawnAllPlayersIntoGame();
             //lobby.onSpawnAIIntoGame();
             lobby.onSpawnFlockAIIntoGame();
-            lobby.onSpawnAsteroidsIntoGame();
+            //lobby.onSpawnAsteroidsIntoGame();
         }
 
 
@@ -968,14 +968,24 @@ module.exports = class GameLobby extends LobbyBase {
                             console.log("bullet.activator: " + bullet.activator);
                             console.log("player.id: " + c.player.id);
                             if(c.player.id == bullet.activator){
-                                c.player.score += 25;
+                                c.player.score += 50;
                                 console.log("player " + c.player.id + " has a score of: " + c.player.score);
                                 let scoreData = {
                                     id: c.player.id,
                                     score: c.player.score
                                 }
+                                let pointData = {
+                                    id: c.player.id,
+                                    score: 50,
+                                    position: {
+                                        x: bullet.position.x,
+                                        y: bullet.position.y,
+                                        z: bullet.position.z
+                                    }
+                                }
             
                                 connection.socket.emit('updatePlayerScore', scoreData);
+                                connection.socket.emit('displayPlayerPointsOnScreen', pointData);
                                 return;
                             }
                             
@@ -1032,7 +1042,17 @@ module.exports = class GameLobby extends LobbyBase {
                                         id: c.player.id,
                                         score: c.player.score
                                     }
+                                    let pointData = {
+                                        id: c.player.id,
+                                        score: 200,
+                                        position: {
+                                            x: bullet.position.x,
+                                            y: bullet.position.y+15,
+                                            z: bullet.position.z
+                                        }
+                                    }
                                     connection.socket.emit('updatePlayerScore', scoreData);
+                                    connection.socket.emit('displayPlayerPointsOnScreen', pointData);
                                     return;
                                 }
                                 
@@ -1156,6 +1176,7 @@ module.exports = class GameLobby extends LobbyBase {
                     // if(data.name == "Enemy_AI(Clone)"){
                     //     isDead = ai.dealDamage(25);
                     // }
+            
 
                     let isDead = ai.dealDamage(100);
                     if (isDead) {
@@ -1195,6 +1216,33 @@ module.exports = class GameLobby extends LobbyBase {
                         connection.socket.emit('serverSpawnExplosion', returnExplosionData);
                         //only broadcast out to those in the same lobby as me
                         connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);    
+
+                        lobby.connections.filter(c => {
+                            console.log("missile.activator: " + missile.activator);
+                            console.log("player.id: " + c.player.id);
+                            if(c.player.id == missile.activator){
+                                c.player.score += 200;
+                                console.log("player " + c.player.id + " has a score of: " + c.player.score);
+                                let scoreData = {
+                                    id: c.player.id,
+                                    score: c.player.score
+                                }
+                                let pointData = {
+                                    id: c.player.id,
+                                    score: 200,
+                                    position: {
+                                        x: missile.position.x,
+                                        y: missile.position.y,
+                                        z: missile.position.z
+                                    }
+                                }
+            
+                                connection.socket.emit('updatePlayerScore', scoreData);
+                                connection.socket.emit('displayPlayerPointsOnScreen', pointData);
+                                return;
+                            }
+                            
+                        });
 
                     } else {
                         //console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
