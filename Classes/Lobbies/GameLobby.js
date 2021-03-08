@@ -1037,7 +1037,7 @@ module.exports = class GameLobby extends LobbyBase {
                             lobby.connections.filter(c => {
                                 if(c.player.id == bullet.activator){
                                     c.player.score += 200;
-                                    console.log("player " + c.player.id + " has a score of: " + c.player.score);
+                                    //console.log("player " + c.player.id + " has a score of: " + c.player.score);
                                     let scoreData = {
                                         id: c.player.id,
                                         score: c.player.score
@@ -1079,7 +1079,7 @@ module.exports = class GameLobby extends LobbyBase {
         let lobby = this;
 
 
-        console.log(" in missileCollisionDestroy event");
+        //console.log(" in missileCollisionDestroy event");
         let returnMissiles = lobby.missiles.filter(missile => {
             return missile.id == data.id
         });
@@ -1116,12 +1116,12 @@ module.exports = class GameLobby extends LobbyBase {
                 if(this.switchExplosion == 0){
                     bulletExplosion.name  = 'Object_Destoryed_Explosion';
                     this.switchExplosion = 1;
-                    console.log("Explosion1");
+                    //console.log("Explosion1");
                 }
                 else{
                     bulletExplosion.name  = 'Object_Destoryed_Explosion2';
                     this.switchExplosion = 0;
-                    console.log("Explosion2");
+                    //console.log("Explosion2");
                 }
                 bulletExplosion.activator = missile.activator;
                 bulletExplosion.position.x = missile.position.x;
@@ -1180,7 +1180,7 @@ module.exports = class GameLobby extends LobbyBase {
 
                     let isDead = ai.dealDamage(100);
                     if (isDead) {
-                        //console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
+                        console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
                         //console.log(data.name + ' has died');
                         let returnData = {
                             id: ai.id
@@ -1218,11 +1218,11 @@ module.exports = class GameLobby extends LobbyBase {
                         connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);    
 
                         lobby.connections.filter(c => {
-                            console.log("missile.activator: " + missile.activator);
-                            console.log("player.id: " + c.player.id);
+                            //console.log("missile.activator: " + missile.activator);
+                            //console.log("player.id: " + c.player.id);
                             if(c.player.id == missile.activator){
                                 c.player.score += 200;
-                                console.log("player " + c.player.id + " has a score of: " + c.player.score);
+                                //console.log("player " + c.player.id + " has a score of: " + c.player.score);
                                 let scoreData = {
                                     id: c.player.id,
                                     score: c.player.score
@@ -1277,7 +1277,7 @@ module.exports = class GameLobby extends LobbyBase {
                 id: missile.id
             }
 
-            console.log('UNSPAWNING missile (' + missile.id + ')');
+            //console.log('UNSPAWNING missile (' + missile.id + ')');
             //Send remove bullet command to players
             connections.forEach(connection => {
                 connection.socket.emit('serverUnspawn', returnData);
