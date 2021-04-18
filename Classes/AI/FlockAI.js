@@ -143,9 +143,9 @@ module.exports = class FlockAI extends AIBase{
             direction.x = targetPosition.x - ai.position.x;
             direction.y = targetPosition.y - ai.position.y;
             direction.z = targetPosition.z - ai.position.z;
-            direction.x *= .5;
-            direction.y *= .5;
-            direction.z *= .5;
+            // direction.x *= .5;
+            // direction.y *= .5;
+            // direction.z *= .5;
             direction = direction.Normalized();
             //console.log("THIS IS MY DIRECTION!!!!!!!!!!!!!! " + JSON.stringify(direction));
             //console.log("PreviousDirecition value: " + JSON.stringify(ai.previousDirection));
@@ -219,6 +219,13 @@ module.exports = class FlockAI extends AIBase{
         if(ai.canShoot && ai.isDead == false){
             //console.log("AI - can shoot - AI id: " + ai.id);
             if((Math.floor(Math.random() * (100 - 0)) + 0) < (10)){
+                direction.x = targetPosition.x - ai.position.x;
+            direction.y = targetPosition.y - ai.position.y;
+            direction.z = targetPosition.z - ai.position.z;
+            direction.x *= .15;
+                direction.y *= .15;
+                direction.z *= .15;
+            direction = direction.Normalized();
                 fireBullet({
                     activator: ai.id,
                     position: ai.position.JSONData(),

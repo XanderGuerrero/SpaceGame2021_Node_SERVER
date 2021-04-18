@@ -5,6 +5,8 @@ let LobbyBase = require('./Lobbies/LobbyBase');
 let GameLobby = require('./Lobbies/GameLobby');
 let GameLobbySettings  = require('./Lobbies/GameLobbySettings');
 
+//LevelData
+let levelData = require('../Files/LevelData/Level1.json');
 module.exports = class Server{
     constructor(){
         this.connections = [];
@@ -100,8 +102,7 @@ module.exports = class Server{
         if(!lobbyFound) {
             console.log('Making a new game lobby');
             //change the gamelobby settings second parameter to add more players to the game
-            let gamelobby = new GameLobby(gameLobbies.length + 1, new GameLobbySettings('FFA',1
-            ));
+            let gamelobby = new GameLobby(gameLobbies.length + 1, new GameLobbySettings('FFA', 1, levelData));
             server.lobbys.push(gamelobby);
             server.onSwitchLobby(connection, gamelobby.id);
         }

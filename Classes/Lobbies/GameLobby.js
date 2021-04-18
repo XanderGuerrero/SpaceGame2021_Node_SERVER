@@ -13,6 +13,7 @@ let EnemyAI = require('../AI/EnemyAI')
 let FlockAI = require('../AI/FlockAI')
 var util = require('util')
 const { debugPort } = require('process')
+const { lookup } = require('dns')
 
 module.exports = class GameLobby extends LobbyBase {
     constructor(id, settings = GameLobbySettings){
@@ -156,7 +157,7 @@ module.exports = class GameLobby extends LobbyBase {
             lobby.onSpawnAllPlayersIntoGame();
             //lobby.onSpawnAIIntoGame();
             lobby.onSpawnFlockAIIntoGame();
-            //lobby.onSpawnAsteroidsIntoGame();
+            lobby.onSpawnAsteroidsIntoGame();
         }
 
 
@@ -242,7 +243,7 @@ module.exports = class GameLobby extends LobbyBase {
         //go through all players and check their positions before
         //setting the enemies position to avoid spawning in the 
         //same spot as something else
-        for (var i = 0; i < 250; i++) {
+        for (var i = 0; i < 100; i++) {
 
             //calculate a random x,y,z coordinate
             let X = Math.floor(Math.random() * (-500 - (-1500))) + (-1500);
@@ -480,11 +481,7 @@ module.exports = class GameLobby extends LobbyBase {
 
                 let returnData = {
                     id: player.id,
-                    position: {
-                        x: player.position.x,
-                        y: player.position.y,
-                        z: player.position.z
-                    }
+                    position: lobby.getRandomSpawn()
                 }
 
                 socket.emit('playerRespawn', returnData);
@@ -743,14 +740,14 @@ module.exports = class GameLobby extends LobbyBase {
                     if (data.ObjCollidedWith == player.id){
                         let isDead = player.dealDamage(100);
                         if(isDead) {
-                            console.log('Player with id: ' + player.id + ' has died from running into an asteroid');
+                            //console.log('Player with id: ' + player.id + ' has died from running into an asteroid');
                             let returnData = {
                                 id: player.id
                             }
                             c.socket.emit('playerDied', returnData);
                             c.socket.broadcast.to(lobby.id).emit('playerDied', returnData);
                         } else {
-                            console.log('Player with id: ' + player.id + ' has (' + player.health + ') health left');
+                            //console.log('Player with id: ' + player.id + ' has (' + player.health + ') health left');
                         }
                         playerHit = true;
                         //lobby.despawnBullet(bullet);
@@ -817,7 +814,7 @@ module.exports = class GameLobby extends LobbyBase {
 
                         let isDead = ai.dealDamage(100);
                         if (isDead) {
-                            console.log('AI with id: ' + ai.id + ' has died from running into an asteroid');
+                            //console.log('AI with id: ' + ai.id + ' has died from running into an asteroid');
                             //console.log(data.name + ' has died');
                             let returnData = {
                                 id: ai.id
@@ -855,7 +852,7 @@ module.exports = class GameLobby extends LobbyBase {
                             connection.socket.broadcast.to(lobby.id).emit('serverSpawnExplosion', returnExplosionData);    
 
                         } else {
-                            console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
+                            //console.log(data.name + ' with id: ' + ai.id + ' has (' + ai.health + ') health left');//******************************************
                         }
                     }
                     playerHit = true;
@@ -892,14 +889,14 @@ module.exports = class GameLobby extends LobbyBase {
                     if (data.ObjCollidedWith == player.id){
                         let isDead = player.dealDamage(1);
                         if(isDead) {
-                            console.log('Player with id: ' + player.id + ' has died at a distance of: ' + distance);
+                            //console.log('Player with id: ' + player.id + ' has died at a distance of: ' + distance);
                             let returnData = {
                                 id: player.id
                             }
                             c.socket.emit('playerDied', returnData);
                             c.socket.broadcast.to(lobby.id).emit('playerDied', returnData);
                         } else {
-                            console.log('Player with id: ' + player.id + ' has (' + player.health + ') health left');
+                            //console.log('Player with id: ' + player.id + ' has (' + player.health + ') health left');
                         }
                         playerHit = true;
                         lobby.despawnBullet(bullet);
@@ -965,11 +962,11 @@ module.exports = class GameLobby extends LobbyBase {
                         
                         
                         lobby.connections.filter(c => {
-                            console.log("bullet.activator: " + bullet.activator);
-                            console.log("player.id: " + c.player.id);
+                            //console.log("bullet.activator: " + bullet.activator);
+                            //console.log("player.id: " + c.player.id);
                             if(c.player.id == bullet.activator){
                                 c.player.score += 50;
-                                console.log("player " + c.player.id + " has a score of: " + c.player.score);
+                                //console.log("player " + c.player.id + " has a score of: " + c.player.score);
                                 let scoreData = {
                                     id: c.player.id,
                                     score: c.player.score
@@ -1180,7 +1177,7 @@ module.exports = class GameLobby extends LobbyBase {
 
                     let isDead = ai.dealDamage(100);
                     if (isDead) {
-                        console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
+                        //console.log('AI with id: ' + ai.id + ' has died at a distance of: ' + distance);
                         //console.log(data.name + ' has died');
                         let returnData = {
                             id: ai.id
@@ -1693,22 +1690,45 @@ module.exports = class GameLobby extends LobbyBase {
         let connections = lobby.connections;
         let socket = connection.socket;
 
+        let randomPosition = lobby.getRandomSpawn();
+        connection.player.position = new Vector3(randomPosition.x, randomPosition.y, randomPosition.z);
+
         var returnData = {
-            id: connection.player.id
+            id: connection.player.id,
+            position: connection.player.position
         }
 
         socket.emit('spawn', returnData); //tell myself I have spawned
-        //socket.broadcast.to(lobby.id).emit('spawn', returnData); // Tell others
+        socket.broadcast.to(lobby.id).emit('spawn', returnData); // Tell others
 
         //Tell myself about everyone else already in the lobby
         connections.forEach(c => {
             if(c.player.id != connection.player.id) {
                 socket.emit('spawn', {
-                    id: c.player.id
+                    id: c.player.id,
+                    position: c.player.position
                 });
             }
         });
     }
+
+    getRandomSpawn(){
+        let lobby = this;
+        let index = lobby.getRndInteger(0, lobby.settings.levelData.FreeForAllSpawn.length);
+
+        return{
+            x: lobby.settings.levelData.FreeForAllSpawn[index].position.x,
+            y: lobby.settings.levelData.FreeForAllSpawn[index].position.y,
+            z: lobby.settings.levelData.FreeForAllSpawn[index].position.z,
+        }
+    }
+
+    getRndInteger(min, max){
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+
+
 
     removePlayer(connection = Connection) {
         let lobby = this;
