@@ -4,10 +4,11 @@ let Vector3 = require('../Vector3')
 let AIBase = require('../AI/AIBase')
 //let Asteroid1 = require('../AI/Asteroid1')
 const util = require('util');
+let shortID = require('shortid');
 
 module.exports = class LobbyBase{
-    constructor(id){
-        this.id = id;
+    constructor(){
+        this.id = shortID.generate();
         this.connections = [];
         this.serverItems = [];
     }

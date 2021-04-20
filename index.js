@@ -7,7 +7,18 @@ let Server = require('./Classes/Server');
 
 console.log('Server has started');
 
-let server = new Server();
+//if env port is undefined
+if(process.env.PORT == undefined){
+    //we are local
+    console.log('LOCAL SERVER');
+}
+//if environment port is set
+else{
+    //We are hosted
+    console.log('HOSTED SERVER');
+}
+
+let server = new Server(process.env.PORT == undefined);
 
 setInterval(() => {
     server.onUpdate();

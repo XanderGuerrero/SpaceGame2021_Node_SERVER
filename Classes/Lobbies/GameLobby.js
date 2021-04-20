@@ -16,8 +16,8 @@ const { debugPort } = require('process')
 const { lookup } = require('dns')
 
 module.exports = class GameLobby extends LobbyBase {
-    constructor(id, settings = GameLobbySettings){
-        super(id);
+    constructor(settings = GameLobbySettings){
+        super();
         this.settings = settings;
         this.lobbyState = new LobbyState();
         this.bullets = [];
@@ -1719,10 +1719,11 @@ module.exports = class GameLobby extends LobbyBase {
         return{
             x: lobby.settings.levelData.FreeForAllSpawn[index].position.x,
             y: lobby.settings.levelData.FreeForAllSpawn[index].position.y,
-            z: lobby.settings.levelData.FreeForAllSpawn[index].position.z,
+            z: lobby.settings.levelData.FreeForAllSpawn[index].position.z
         }
     }
 
+    //includes the min but excludese the max
     getRndInteger(min, max){
         return Math.floor(Math.random() * (max - min)) + min;
     }
