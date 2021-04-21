@@ -104,6 +104,9 @@ module.exports = class Connection{
             socket.broadcast.to(connection.lobby.id).emit('updateRotation', player);
         });
 
+        socket.on('quitGame', function(data){
+            server.onSwitchLobby(connection, server.generalServerID);
+        });
 
         // socket.on('updateShipTilt', function(data){
         //     ///console.log('updateRotation data receieved shipTiltRotation : ' + data.shipTiltRotation);

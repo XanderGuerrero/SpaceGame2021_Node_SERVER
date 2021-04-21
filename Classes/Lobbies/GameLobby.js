@@ -25,6 +25,8 @@ module.exports = class GameLobby extends LobbyBase {
         this.missiles = [];
         this.switchExplosion = 0;
         this.currentHealth = 100;
+
+        this.endGameLobby = function() {};
     }
 
     //called every cycle
@@ -129,6 +131,10 @@ module.exports = class GameLobby extends LobbyBase {
         //respawn dead players
         lobby.updatePlayerHealth();
         lobby.updateDeadPlayers();
+        //Clos lobby because no one is here
+        if (lobby.connections.length == 0) {
+            lobby.endGameLobby();
+        }
     }
 
 
@@ -185,6 +191,15 @@ module.exports = class GameLobby extends LobbyBase {
         //Example: loot, perhaps flying bullets etc
         lobby.onUnspawnAllAIInGame(connection);
         //lobby.onUnspawnAllAsteroidsInGame(connection);
+        //Determine if we have enough players to continue the game or not
+        if (lobby.connections.length < lobby.settings.minPlayers) {
+            lobby.connections.forEach(connection => {
+                if (connection != undefined) {
+                    connection.socket.emit('unloadGame');
+                    connection.server.onSwitchLobby(connection, connection.server.generalServerID);
+                }
+            });
+        }
     }
 
     onSpawnAllPlayersIntoGame() {

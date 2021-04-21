@@ -57,7 +57,7 @@ module.exports = class LobbyBase{
         //Set item into the array
         serverItems.push(item);
         item.position = location;
-        console.log(JSON.stringify('Spawning this gameObject: ' + item.username + ' ' + item.id));
+        //console.log(JSON.stringify('Spawning this gameObject: ' + item.username + ' ' + item.id));
          if(item.username == "ASTEROID_AI"){
           
 
