@@ -163,7 +163,7 @@ module.exports = class GameLobby extends LobbyBase {
             lobby.onSpawnAllPlayersIntoGame();
             //lobby.onSpawnAIIntoGame();
             lobby.onSpawnFlockAIIntoGame();
-            lobby.onSpawnAsteroidsIntoGame();
+            //lobby.onSpawnAsteroidsIntoGame();
         }
 
 
@@ -258,7 +258,7 @@ module.exports = class GameLobby extends LobbyBase {
         //go through all players and check their positions before
         //setting the enemies position to avoid spawning in the 
         //same spot as something else
-        for (var i = 0; i < 100; i++) {
+        for (var i = 0; i < 150; i++) {
 
             //calculate a random x,y,z coordinate
             let X = Math.floor(Math.random() * (-500 - (-1500))) + (-1500);
@@ -312,7 +312,7 @@ module.exports = class GameLobby extends LobbyBase {
          //go through all players and check their positions before
         //setting the enemies position to avoid spawning in the 
         //same spot as something else
-        for (var i = 0; i < 95; i++) {
+        for (var i = 0; i < 100; i++) {
 
             //calculate a random x,y,z coordinate
             let X = Math.floor(Math.random() * (1500 - (-1500))) + (-1500);
